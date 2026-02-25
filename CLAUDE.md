@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a framework-agnostic PHP package that provides a Guzzle HTTP message formatter with configurable obfuscation for safe logging of sensitive data. It includes string obfuscation utilities, URI/query/header/body obfuscation, message compression, and a wrapped PSR logger.
+This is a framework-agnostic PHP package that provides a Guzzle HTTP message formatter with configurable obfuscation for safe logging of sensitive data. It includes string obfuscation utilities, URI/query/header/body obfuscation, and message compression.
 
 ## Directory Structure
 
