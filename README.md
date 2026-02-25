@@ -25,12 +25,12 @@ supports obfuscating:
 - **User info** (password part) in URIs
 
 It also includes utilities for PSR-7 message stringification with large payload
-compression, and a wrapped PSR-3 logger that supports runtime logger swapping.
+compression.
 
 ## What are the requirements?
 
 - PHP 8.4 or above
-- Guzzle HTTP 7.10+
+- Guzzle HTTP 7.4.5+
 
 ## How to install it?
 
@@ -68,16 +68,6 @@ $formatter->setUriParameters([
 $formatter->setRequestHeaders([
     'Authorization' => new StringObfuscator('X', 3),  // Replaces with "XXX"
 ]);
-```
-
-### Wrapped logger
-
-```php
-use PoorPlebs\GuzzleObfuscatedFormatter\Psr\Log\WrappedLogger;
-
-$logger = new WrappedLogger($psrLogger);
-// Swap the underlying logger at runtime:
-$logger->setLogger($anotherPsrLogger);
 ```
 
 ## How to contribute?
