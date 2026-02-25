@@ -1,13 +1,13 @@
-# Agent instructions for poor-plebs/package-template
+# Agent instructions for poor-plebs/guzzle-obfuscated-formatter
 
 ## Project Overview
 
-This is a framework-agnostic PHP package template designed for building reusable PHP libraries. It provides a modern development environment with strict coding standards, comprehensive testing, and automated quality checks.
+This is a framework-agnostic PHP package that provides a Guzzle HTTP message formatter with configurable obfuscation for safe logging of sensitive data. It includes string obfuscation utilities, URI/query/header/body obfuscation, message compression, and a wrapped PSR logger.
 
 ## Directory Structure
 
 ```text
-├── src/                  # Source code (PSR-4: PoorPlebs\PackageTemplate)
+├── src/                  # Source code (PSR-4: PoorPlebs\GuzzleObfuscatedFormatter)
 ├── tests/                # Test files (Pest PHP)
 │   ├── Pest.php          # Pest configuration
 │   ├── ArchTest.php      # Architectural tests
@@ -28,8 +28,8 @@ This is a framework-agnostic PHP package template designed for building reusable
 
 ### Namespace Conventions
 
-- Source code: `PoorPlebs\PackageTemplate\*`
-- Tests: `PoorPlebs\PackageTemplate\Tests\*`
+- Source code: `PoorPlebs\GuzzleObfuscatedFormatter\*`
+- Tests: `PoorPlebs\GuzzleObfuscatedFormatter\Tests\*`
 
 ### Forbidden Patterns
 
@@ -39,6 +39,7 @@ This is a framework-agnostic PHP package template designed for building reusable
 ## Tooling Commands
 
 Some commands use caching in the `/cache` directory for performance (for example, PHP-CS-Fixer and PHPStan).
+If local PHP/Composer are unavailable, use Docker via `bin/dc <composer-args...>`.
 
 ### Code Quality
 
@@ -47,6 +48,9 @@ composer lint          # PHP syntax check (parallel)
 composer cs            # Check code style (dry-run)
 composer csf           # Fix code style
 composer static        # PHPStan analysis (level max)
+bin/dc lint            # Same via Docker
+bin/dc cs              # Same via Docker
+bin/dc static          # Same via Docker
 ```
 
 ### Testing
@@ -55,8 +59,19 @@ composer static        # PHPStan analysis (level max)
 composer test          # Run tests without coverage (parallel)
 composer coverage      # Run tests with coverage (min 80%)
 composer coverage-html # Generate HTML coverage report
+composer coverage-clover # Generate clover.xml + junit.xml (min 80%)
 composer type-coverage # Check type coverage (min 80%)
+bin/dc test            # Same via Docker
+bin/dc coverage        # Same via Docker
+bin/dc coverage-html   # Same via Docker
+bin/dc coverage-clover # Same via Docker
+bin/dc type-coverage   # Same via Docker
 ```
+
+### Test Artifacts
+
+- Coverage and reporting commands can generate `coverage/`, `clover.xml`, and `junit.xml`
+- These artifacts should stay untracked and are excluded via `.gitignore`
 
 ### Full CI Pipeline
 
@@ -71,11 +86,11 @@ composer type-coverage # Run type coverage check (min 80%)
 
 - **Code Coverage**: Minimum 80%
 - **Type Coverage**: Minimum 80%
-- Coverage is enforced in CI and via `--min=80` flag
+- Coverage is enforced in CI via Composer script thresholds (`--min=80` for code coverage, `--min=80` for type coverage)
 
 ## Testing with Pest
 
-This template uses [Pest PHP](https://pestphp.com/) v4 for testing.
+This project uses [Pest PHP](https://pestphp.com/) v4 for testing.
 
 ### Writing Tests
 
@@ -84,7 +99,7 @@ This template uses [Pest PHP](https://pestphp.com/) v4 for testing.
 
 declare(strict_types=1);
 
-use PoorPlebs\PackageTemplate\YourClass;
+use PoorPlebs\GuzzleObfuscatedFormatter\YourClass;
 
 covers(YourClass::class);
 
@@ -105,7 +120,7 @@ Add constraints to `tests/ArchTest.php`:
 
 ```php
 arch('classes follow naming convention')
-    ->expect('PoorPlebs\PackageTemplate')
+    ->expect('PoorPlebs\GuzzleObfuscatedFormatter')
     ->classes()
     ->toHaveSuffix('Handler');
 ```
@@ -122,9 +137,19 @@ PHPStan runs at level `max` with additional rulesets:
 
 1. All code must pass `composer ci` before committing
 2. Add tests for new functionality
-3. Maintain 80%+ code and type coverage
-4. Update CHANGELOG.md with changes
-5. Follow existing code patterns and naming conventions
+3. Maintain at least 80% code coverage and 80% type coverage
+4. Use SemVer tags without the `v` prefix (for example `1.2.3`)
+5. Do not maintain a `CHANGELOG.md`; release notes are generated from conventional commits and tags
+6. Follow existing code patterns and naming conventions
+
+## Releases And Publishing
+
+- Publish using Git tags and GitHub releases.
+- Tag format must be `MAJOR.MINOR.PATCH` (no leading `v`).
+- Use tag notes as release notes (for example `gh release create <tag> --notes-from-tag`).
+- Prefer automated release flow via `.github/workflows/release.yml` on tag push.
+- Prefer `bin/release-tag <version> <notes-file> --push` to enforce consistent annotated tags.
+- Keep distribution excludes in `composer.json` (`archive.exclude`) and `.gitattributes` (`export-ignore`) synchronized.
 
 ## File Excludes
 
@@ -135,6 +160,8 @@ The following are excluded from distribution packages:
 - Cache directory
 - Git/GitHub files (`.git`, `.github`, `.gitignore`, `.gitattributes`)
 - Editor config (`.editorconfig`)
+- Editor workspace files (`.vscode`)
+- Local scripts and docs (`bin/`, `Dockerfile`, `docker-compose.yml`, `CLAUDE.md`)
 - Composer lockfile (`composer.lock`)
 - Test config (`phpunit.xml.dist`)
-- Changelog (`CHANGELOG.md`)
+- Tool artifacts (`coverage/`, `clover.xml`, `junit.xml`, `vendor/`)

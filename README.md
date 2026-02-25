@@ -1,7 +1,7 @@
-# poor-plebs/package-template
+# poor-plebs/guzzle-obfuscated-formatter
 
-[![CI](https://github.com/Poor-Plebs/package-template/actions/workflows/ci.yml/badge.svg)](https://github.com/Poor-Plebs/package-template/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/Poor-Plebs/package-template/branch/main/graph/badge.svg)](https://codecov.io/gh/Poor-Plebs/package-template)
+[![CI](https://github.com/Poor-Plebs/guzzle-obfuscated-formatter/actions/workflows/ci.yml/badge.svg)](https://github.com/Poor-Plebs/guzzle-obfuscated-formatter/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/Poor-Plebs/guzzle-obfuscated-formatter/branch/main/graph/badge.svg)](https://codecov.io/gh/Poor-Plebs/guzzle-obfuscated-formatter)
 
 **[What is it for?](#what-is-it-for)** |
 **[What are the requirements?](#what-are-the-requirements)** |
@@ -9,43 +9,88 @@
 **[How to use it?](#how-to-use-it)** |
 **[How to contribute?](#how-to-contribute)**
 
-Put a short one or two sentence description of the package.
+Guzzle HTTP message formatter with configurable obfuscation for safe logging
+of sensitive data.
 
 ## What is it for?
 
-Explain in detail here what this package is for.
+This package provides a Guzzle `MessageFormatterInterface` implementation that
+can selectively obfuscate sensitive data in HTTP messages before logging. It
+supports obfuscating:
+
+- **URI path segments** via regex patterns
+- **Query parameters** by name
+- **Request and response headers** by name
+- **JSON body fields** (request and response) by key, including nested fields
+- **User info** (password part) in URIs
+
+It also includes utilities for PSR-7 message stringification with large payload
+compression, and a wrapped PSR-3 logger that supports runtime logger swapping.
 
 ## What are the requirements?
 
-Explain here what the runtime requirements are, which extensions need to be
-installed.
-
 - PHP 8.4 or above
+- Guzzle HTTP 7.10+
 
 ## How to install it?
 
-Explain here how to install the package.
-
 ```bash
-composer require poor-plebs/package-template
+composer require poor-plebs/guzzle-obfuscated-formatter
 ```
 
 ## How to use it?
 
-Explain here how to use this package.
+### Basic usage
+
+```php
+use PoorPlebs\GuzzleObfuscatedFormatter\GuzzleHttp\ObfuscatedMessageFormatter;
+use PoorPlebs\GuzzleObfuscatedFormatter\Obfuscator\StringObfuscator;
+
+$formatter = (new ObfuscatedMessageFormatter(ObfuscatedMessageFormatter::DEBUG))
+    ->setQueryParameters(['api_key', 'token'])
+    ->setRequestHeaders(['Authorization'])
+    ->setResponseHeaders(['Set-Cookie'])
+    ->setRequestBodyParameters(['password', 'secret'])
+    ->setResponseBodyParameters(['access_token']);
+```
+
+### URI path obfuscation with regex
+
+```php
+$formatter->setUriParameters([
+    '/\/api\/v1\/users\/\d+/' => new StringObfuscator('*', 5),
+]);
+```
+
+### Custom obfuscator per parameter
+
+```php
+$formatter->setRequestHeaders([
+    'Authorization' => new StringObfuscator('X', 3),  // Replaces with "XXX"
+]);
+```
+
+### Wrapped logger
+
+```php
+use PoorPlebs\GuzzleObfuscatedFormatter\Psr\Log\WrappedLogger;
+
+$logger = new WrappedLogger($psrLogger);
+// Swap the underlying logger at runtime:
+$logger->setLogger($anotherPsrLogger);
+```
 
 ## How to contribute?
 
-`poor-plebs/package-template` follows semantic versioning. Read more on
-[semver.org][1].
+`poor-plebs/guzzle-obfuscated-formatter` follows semantic versioning. Read more
+on [semver.org][1].
 
 Create issues to report problems or requests. Fork and create pull requests to
-propose solutions and ideas. Always add a CHANGELOG.md entry in the unreleased
-section.
+propose solutions and ideas.
 
 ### Development Setup
 
-This template uses modern PHP tooling with strict quality standards:
+This package uses modern PHP tooling with strict quality standards:
 
 - **Testing**: [Pest PHP](https://pestphp.com/) v4 with parallel execution
 - **Static Analysis**: PHPStan at level `max` with strict and deprecation rules
@@ -64,16 +109,22 @@ composer csf           # Fix code style
 composer ci            # Run full CI pipeline
 ```
 
-### Architectural Tests
+### Docker
 
-The template includes architectural tests in `tests/ArchTest.php` that enforce:
-- Strict types declaration in all files
-- Proper namespace conventions
-- No debugging functions (`dd`, `dump`, `var_dump`, etc.)
+```bash
+bin/dc install         # Install dependencies via Docker
+bin/dc test            # Run tests via Docker
+bin/dc ci              # Run full CI pipeline via Docker
+```
 
-### AI-Assisted Development
+### Versioning and Releases
 
-See [.github/copilot-instructions.md](.github/copilot-instructions.md) for
-guidelines on AI-assisted contributions.
+This project uses [Semantic Versioning][1] with tags in `MAJOR.MINOR.PATCH`
+format (no `v` prefix). Releases are automated via GitHub Actions when a tag is
+pushed.
+
+```bash
+bin/release-tag 1.0.0 notes.md --push
+```
 
 [1]: https://semver.org

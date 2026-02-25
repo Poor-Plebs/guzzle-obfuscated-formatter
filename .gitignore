@@ -1,8 +1,10 @@
+/.claude/settings.local.json
 /.idea
 /.vscode
 /cache/
 /clover.xml
 /coverage
+/junit.xml
 /phpstan.neon
 /phpunit.xml
 /vendor

@@ -67,3 +67,4 @@ jobs:
           echo "  - composer lint      (PHP syntax check)"
           echo "  - composer ci        (runs full CI pipeline)"
           echo "  - composer all       (runs CI with auto-fix)"
+          echo "  - composer type-coverage (checks type coverage, min 80%)"
