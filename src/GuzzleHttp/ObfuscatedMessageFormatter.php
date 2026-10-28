@@ -113,14 +113,11 @@ final class ObfuscatedMessageFormatter implements MessageFormatterInterface
                         $result = Message::toString($req);
                         break;
                     case 'response':
-                        if (!$res instanceof ResponseInterface) {
-                            $result = '';
-                            break;
+                        if ($res instanceof ResponseInterface) {
+                            $result = $this->shouldLogResponseBody($res)
+                                ? Message::toString($res)
+                                : $this->responseToStringWithoutBody($res);
                         }
-
-                        $result = $this->shouldLogResponseBody($res)
-                            ? Message::toString($res)
-                            : $this->responseToStringWithoutBody($res);
                         break;
                     case 'req_headers':
                         $result = trim($req->getMethod()
